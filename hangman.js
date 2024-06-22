@@ -4,15 +4,17 @@ https://sprig.hackclub.com/gallery/getting_started
 
 @title: hangman numbers
 @author: taco
-@tags: [beginner]
+@tags: [hangman.js]
 @addedOn: 2024-6-20
 */
 
 // initial variables
-let actualnumber;
-let numberGuess;
-let currentNumber = 1;
-let guess = 3;
+let actualnumber; // the actual number (ikr!!)
+let numberGuess; // what the arrow is pointing to 
+let currentNumber = 1; // arrow starts on 1
+let guess = 3; // how many guesses u have
+let gameOver = false; // its not game over yet!
+let feedback = ""; // lower/higher
 
 
 // defining the bitmaps
@@ -236,9 +238,11 @@ setMap(levels[currentLevel]);
 
 function newGame() {
   actualNumber = Math.floor(Math.random() * 10) + 1;
-  addText("Guess a number \nbetween \n1 and 10.", { x: 3, y: 1, color: color`3` });
-  guess = 3; // Reset number of guesses
-  updateText(); // Update text display
+  addText("Guess a number \nbetween \n1 and 10.", { x: 3, y: 1, color: color`3` }); 
+  guess = 3; // reset number of guesses
+  gameOver = false; // reset gameover flag
+  feedback = ""; // reset feedback 
+  updateText(); 
 
 
 }
@@ -247,48 +251,56 @@ function newGame() {
 newGame();
 
 
-
-
 // left input -=1 currentNumber
 onInput("a", () => {
-  if (currentNumber > 1) {
-    getFirst(z).x -= 1; // Move arrow left
-    currentNumber -= 1; // Subtract 1 from currentNumber
-    updateText(); // Update text display
+  if (!gameOver && currentNumber > 1) {
+    getFirst(z).x -= 1; // move arrow left
+    currentNumber -= 1; // subtract 1 from currentNumber
+    updateText(); 
   }
 });
 // right input += 1 currentNumber
 onInput("d", () => {
-  if (currentNumber < 10) {
-    getFirst(z).x += 1; // Move arrow right
-    currentNumber += 1; // Add 1 to currentNumber
-    updateText(); // Update text display
+  if (!gameOver && currentNumber < 10) { //check if game over
+    getFirst(z).x += 1; // move arrow right
+    currentNumber += 1; // add 1 to currentNumber
+    updateText(); 
   }
 });
+
 
 // update the displayed text
 function updateText() {
   clearText(); 
   addText(`Current Number: ${currentNumber}`, { x: 1, y: 8, color: color`3` }); // Display currentNumber with specified option
-//addText(`Random Number: ${actualNumber}`, { x: 1, y: 9, color: color`3` }); //check the actual number
+ // addText(`Random Number: ${actualNumber}`, { x: 1, y: 9, color: color`3` }); //check the actual number
   addText(`Guesses left: ${guess}`, { x: 1, y: 10, color: color`3` });
-// if they're bad at guessing?
+   if (feedback) {
+    addText(feedback, { x: 1, y: 11, color: color`3` }); // lower/higher feedback
+   }
+  // if they're bad at guessing
   if (guess === 0) {
-      clearText(); 
-      addText("Game over! :(\nPress's' to \nrestart.", { x: 1, y: 7, color: color`3` });
-    }
+    gameOver = true; // gameover flag true
+    clearText(); 
+    addText("Game over! :(\nPress's' to \nrestart.", { x: 1, y: 7, color: color`3` });
+  }
 }
-
 // checking the guessed number
 onInput("w", () => {
-  if (currentNumber === actualNumber) {
-    clearText(); 
-    addText(`Congrats!!\nYou guessed the\ncorrect number, ${actualNumber}!`, { x: 1, y: 8, color: color`3` });
-  } else {
-    guess -= 1; // remove a guess :(
-
-    
-    updateText(); 
+  if (!gameOver) {
+    if (currentNumber === actualNumber) {
+      gameOver = true; // Set gameOver flag
+      clearText(); 
+      addText(`Congrats!!\nYou guessed the\ncorrect number, ${actualNumber}!`, { x: 1, y: 8, color: color`3` });
+    } else {
+      guess -= 1; // remove a guess :(
+      if (currentNumber < actualNumber) { //feedback
+        feedback = "Try higher!";
+      } else {
+        feedback = "Try lower!";
+      }
+      updateText(); 
+    }
   }
 });
 // s input restart the game
@@ -297,5 +309,5 @@ onInput("s", () => {
 });
 
 
-// Initial display of the text
+// initial display of text
 updateText();
